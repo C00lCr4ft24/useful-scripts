@@ -4,8 +4,6 @@ param (
     [string]$DriveName = ""
 )
 
-Write-Host $MountPoint.GetType()
-
 if($MountPoint -eq "") {
     $MountPoint = Read-Host "Enter the mount point (e.g. C:\XYZ\Folder)"
 }
