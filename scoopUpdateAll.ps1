@@ -1,4 +1,9 @@
-scoop update *
-scoop cache rm *
-scoop cleanup *
-exit 0
+function Invoke-UpdateAll {
+    scoop update *
+    scoop cache rm *
+    scoop cleanup *
+}
+
+Write-Host "##############################"
+Invoke-UpdateAll
+Write-Host "##############################"
