@@ -6,6 +6,16 @@ function Invoke-ReadKey {
 	$null = [System.Console]::ReadKey($true)
 	Clear-Host
 }
+$case = 'x'
+$answered = $false
+do {
+	$value = Read-Host "Do you want the shortcuts to open Windows Terminal [y/n]"
+	if(($value -eq 'y') -or ($value -eq 'n')) { 
+		$answered = $true 
+		$case = $value
+	}
+	else { Write-Host "Please answer with either y or n!" -ForegroundColor Red }
+} while(!$answered)
 
 Write-Host 'Creating Shortcuts for all scripts in the current directory recursively...' -ForegroundColor Cyan
 Write-Host '############################'
@@ -18,22 +28,29 @@ if (-not (Test-Path -Path $outFolder)) {
 
 $shell = New-Object -ComObject WScript.Shell
 
-Get-ChildItem -Path $PSScriptRoot -Filter *.bat -Recurse | ForEach-Object {
+Get-ChildItem -Path $PSScriptRoot -Filter *.ps1 -Recurse | ForEach-Object {
 	$scName = $_.BaseName + '.lnk'
 	$scPath = Join-Path -Path $outFolder -ChildPath $scName
 	$sc = $shell.CreateShortcut($scPath)
-	$sc.TargetPath = $_.FullName
+
+	if($case -eq 'y') { $sc.TargetPath = 'wt.exe'; $sc.Arguments = 'new-tab powershell.exe -File "{0}"' -f $_.FullName; }
+	else { $sc.TargetPath = $PSScriptRoot + '\' + $_.BaseName + '.bat' }
+	$sc.WorkingDirectory = $_.DirectoryName
+	$sc.IconLocation = 'powershell.exe, 0'
 	$sc.Save()
+	Write-Host $scPath -ForegroundColor Green
 }
 
 Write-Host '############################'
 Invoke-ReadKey -message "Press any key to exit..."
 
+
+
 # SIG # Begin signature block
 # MIIGMgYJKoZIhvcNAQcCoIIGIzCCBh8CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAA8trHywLNpmdhSgWIJwkgwN
-# jY6gggPIMIIDxDCCAqygAwIBAgIQRqaG/Zc3Po5BF31FOLqbBTANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+cmt6TRamLVbAdISm34krgia
+# ij+gggPIMIIDxDCCAqygAwIBAgIQRqaG/Zc3Po5BF31FOLqbBTANBgkqhkiG9w0B
 # AQsFADAfMR0wGwYDVQQDDBRNZW55QnVzaCBQcm9kdWN0aW9uczAeFw0yNjA3MDQx
 # MjE4MTZaFw0yOTA3MDQxMjI4MTVaMB8xHTAbBgNVBAMMFE1lbnlCdXNoIFByb2R1
 # Y3Rpb25zMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApsU5F3dB4odF
@@ -56,12 +73,12 @@ Invoke-ReadKey -message "Press any key to exit..."
 # zq2tXv8sImITL5ULDqcxggHUMIIB0AIBATAzMB8xHTAbBgNVBAMMFE1lbnlCdXNo
 # IFByb2R1Y3Rpb25zAhBGpob9lzc+jkEXfUU4upsFMAkGBSsOAwIaBQCgeDAYBgor
 # BgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEE
-# MBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTN
-# lDMM4aIHqHWSbrzE/RbMpb8TpzANBgkqhkiG9w0BAQEFAASCAQBwfQGkSXpfmzCG
-# r6pwqcPZ06YKLr4AHfaUCu6H7AYxqzzTUVEP49MR7ZL1ixnmj2cXBmGURd+QsV1H
-# evoOXVp978zHchp0XPYG9wmOX13qMun78lTphCBC+ZYC/WIkd56wtuHug5ChiGAr
-# wTHPjPLjyl3/xPYd6eXX9Zq308ii+sjfpv9seqetcRb+AyTLjYMwWJ4MqxctwjhI
-# afTDhCXIslKHVl63Z0+KAiKuXOd3lL6PKZ/CHzshit6jvK+ae+BVizM5ZMiSMhAo
-# X7nmcLYHrbwOY6ZGP73qJQ0eMaUry8IwHyUptBjVfZx+5gl2feIbAN4O9u4blV5C
-# nxZRk2nu
+# MBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSs
+# V+a2WlMPiFp3VFtnOLlQAxi81zANBgkqhkiG9w0BAQEFAASCAQBP1M17ATUX60u4
+# Wt4C8qw2xBZTmKNH89YsjjAcW4Csby7KezIO05zPXs+k85ng36WBUwYd3gVJrO5r
+# +6glHVmL3mTRtcO1yEzwu36112u46Vs2vUcU3L2vqny1RsPxq1b8YqFVJ/QYL/dv
+# PO/a6naWHyJB9Y7naRo8LiS7ETSHar93g3M4JQcxKLYLHR6gSb1AGH8RjxU796Fi
+# YBnFcvs0V2k63PsEESQ5L2ttF5AVZLObU5/7LcevTfaXu2tc6UCLJoh6RuDjb3bK
+# nuk6g+5mmWqkPtBaEDKIYCzWEeRMq5emspf4KQcWEOgdlJmytmpOSpxCYWUVcXxh
+# nd6xHfv/
 # SIG # End signature block
